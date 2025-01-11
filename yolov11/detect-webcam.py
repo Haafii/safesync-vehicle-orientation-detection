@@ -12,8 +12,8 @@ import time
 from ultralytics import YOLO
 
 # Load the pretrained YOLO model
-# model = YOLO("best.pt")
-model = YOLO("best.onnx", task="detect")
+model = YOLO("best.pt")
+# model = YOLO("best.onnx", task="detect")
 
 
 # Initialize the video source (0 for webcam or path to a video file)
