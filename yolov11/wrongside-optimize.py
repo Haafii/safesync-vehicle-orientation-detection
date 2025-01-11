@@ -1,6 +1,8 @@
 import cv2
 import time
+import logging
 from ultralytics import YOLO
+logging.getLogger("ultralytics").setLevel(logging.ERROR)
 
 # Load the pretrained YOLO model
 model = YOLO("best.pt")
