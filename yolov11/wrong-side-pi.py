@@ -2,19 +2,22 @@ import cv2
 import time
 import logging
 from ultralytics import YOLO
-import picamera
-from picamera.array import PiRGBArray
+from picamera2 import Picamera2
+import numpy as np
 
+# Configure logging
 logging.getLogger("ultralytics").setLevel(logging.ERROR)
+
+# Initialize the Pi camera
+picam2 = Picamera2()
+picam2.preview_configuration.main.size = (640, 480)
+picam2.preview_configuration.main.format = "RGB888"
+picam2.preview_configuration.align()
+picam2.configure("preview")
+picam2.start()
 
 # Load the pretrained YOLO model
 model = YOLO("best.pt")
-
-# Initialize the Raspberry Pi camera
-camera = picamera.PICamera()
-camera.resolution = (640, 480)
-camera.framerate = 30
-rawCapture = PiRGBArray(camera, size=(640, 480))
 
 # Initialize FPS calculation
 fps = 0.0
@@ -31,20 +34,27 @@ start_time = time.time()
 # Initialize the result string for "wrong side" or "not wrong side"
 side_check_result = ""
 
-# Allow the camera to warm up
-time.sleep(0.1)
+# Initialize counter for frame processing
+count = 0
 
-# Capture frames continuously from the camera
-for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-    # Grab the frame
-    image = frame.array
-
+while True:
+    # Capture frame from Pi camera
+    frame = picam2.capture_array()
+    
+    # Process every third frame to improve performance
+    count += 1
+    if count % 3 != 0:
+        continue
+        
+    # Flip the frame if needed (adjust -1 to 0, 1, or remove if not needed)
+    frame = cv2.flip(frame, -1)
+    
     # Split the frame into left and right halves
-    height, width, _ = image.shape
-    left_frame = image[:, :width // 2]
-    right_frame = image[:, width // 2:]
+    height, width, _ = frame.shape
+    left_frame = frame[:, :width // 2]
+    right_frame = frame[:, width // 2:]
 
-    # Run YOLO inference on the left half
+    # Run YOLO inference on left half
     left_results = model(left_frame)
 
     # Count detections for left side
@@ -58,7 +68,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         elif 'front' in class_name:
             left_front_count += 1
 
-    # Visualize the results on the left frame
+    # Visualize the results on the frames
     left_annotated_frame = left_results[0].plot()
 
     # Calculate FPS
@@ -66,52 +76,52 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     fps = 1 / (current_time - prev_time)
     prev_time = current_time
 
-    # Overlay FPS on the left frame
+    # Overlay FPS
     cv2.putText(
-        left_annotated_frame, 
-        f"FPS: {fps:.2f}", 
-        (10, 30), 
-        cv2.FONT_HERSHEY_SIMPLEX, 
-        1, 
-        (0, 255, 0), 
-        2, 
+        left_annotated_frame,
+        f"FPS: {fps:.2f}",
+        (10, 30),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1,
+        (0, 255, 0),
+        2,
         cv2.LINE_AA
     )
 
-    # Overlay the current counts (front, side, back) on the left bottom for 5 seconds
+    # Display counts for 5 seconds
     if current_time - start_time <= 5:
         cv2.putText(
-            left_annotated_frame, 
-            f"Front: {left_front_count}", 
-            (10, height - 90), 
-            cv2.FONT_HERSHEY_SIMPLEX, 
-            1, 
-            (255, 0, 0), 
-            2, 
+            left_annotated_frame,
+            f"Front: {left_front_count}",
+            (10, height - 90),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (255, 0, 0),
+            2,
             cv2.LINE_AA
         )
         cv2.putText(
-            left_annotated_frame, 
-            f"Side: {left_side_count}", 
-            (10, height - 60), 
-            cv2.FONT_HERSHEY_SIMPLEX, 
-            1, 
-            (255, 255, 0), 
-            2, 
+            left_annotated_frame,
+            f"Side: {left_side_count}",
+            (10, height - 60),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (255, 255, 0),
+            2,
             cv2.LINE_AA
         )
         cv2.putText(
-            left_annotated_frame, 
-            f"Back: {left_back_count}", 
-            (10, height - 30), 
-            cv2.FONT_HERSHEY_SIMPLEX, 
-            1, 
-            (0, 255, 255), 
-            2, 
+            left_annotated_frame,
+            f"Back: {left_back_count}",
+            (10, height - 30),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 255),
+            2,
             cv2.LINE_AA
         )
     else:
-        # After 5 seconds, check the accumulated counts and print the result
+        # After 5 seconds, check counts and update result
         if left_front_count > left_back_count:
             side_check_result = "Wrong Side"
             print("Wrong Side")
@@ -119,25 +129,25 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
             side_check_result = "Not Wrong Side"
             print("Not Wrong Side")
         
-        # Reset the counts after 5 seconds and restart the count accumulation
+        # Reset counts and timer
         left_back_count = 0
         left_side_count = 0
         left_front_count = 0
-        start_time = time.time()  # Reset the start time for the next 5 seconds period
+        start_time = time.time()
 
-    # Display the side check result on the screen (bottom middle)
+    # Display side check result
     cv2.putText(
-        left_annotated_frame, 
-        side_check_result, 
-        (width // 4, height - 30), 
-        cv2.FONT_HERSHEY_SIMPLEX, 
-        1, 
-        (0, 255, 0) if side_check_result == "Not Wrong Side" else (0, 0, 255), 
-        2, 
+        left_annotated_frame,
+        side_check_result,
+        (width // 4, height - 30),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1,
+        (0, 255, 0) if side_check_result == "Not Wrong Side" else (0, 0, 255),
+        2,
         cv2.LINE_AA
     )
 
-    # Optional: Print counts top left as additional info
+    # Display current frame counts at top
     left_back_count_top = 0
     left_side_count_top = 0
     left_front_count_top = 0
@@ -151,51 +161,48 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         elif 'front' in class_name:
             left_front_count_top += 1
 
+    # Display current counts at top
     cv2.putText(
-        left_annotated_frame, 
-        f"Back: {left_back_count_top}", 
-        (10, 60), 
-        cv2.FONT_HERSHEY_SIMPLEX, 
-        1, 
-        (0, 255, 255), 
-        2, 
+        left_annotated_frame,
+        f"Back: {left_back_count_top}",
+        (10, 60),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1,
+        (0, 255, 255),
+        2,
+        cv2.LINE_AA
+    )
+    cv2.putText(
+        left_annotated_frame,
+        f"Side: {left_side_count_top}",
+        (10, 90),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1,
+        (255, 255, 0),
+        2,
+        cv2.LINE_AA
+    )
+    cv2.putText(
+        left_annotated_frame,
+        f"Front: {left_front_count_top}",
+        (10, 120),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1,
+        (255, 0, 0),
+        2,
         cv2.LINE_AA
     )
 
-    cv2.putText(
-        left_annotated_frame, 
-        f"Side: {left_side_count_top}", 
-        (10, 90), 
-        cv2.FONT_HERSHEY_SIMPLEX, 
-        1, 
-        (255, 255, 0), 
-        2, 
-        cv2.LINE_AA
-    )
-
-    cv2.putText(
-        left_annotated_frame, 
-        f"Front: {left_front_count_top}", 
-        (10, 120), 
-        cv2.FONT_HERSHEY_SIMPLEX, 
-        1, 
-        (255, 0, 0), 
-        2, 
-        cv2.LINE_AA
-    )
-
-    # Stack the frames side by side
+    # Combine frames
     final_frame = cv2.hconcat([left_annotated_frame, right_frame])
 
-    # Display the annotated frame
+    # Display the result
     cv2.imshow("YOLO Inference", final_frame)
-
-    # Clear the stream for the next frame
-    rawCapture.truncate(0)
 
     # Break loop on 'q' key press
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-# Release resources and cleanup
+# Cleanup
 cv2.destroyAllWindows()
+picam2.stop()
