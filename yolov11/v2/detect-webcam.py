@@ -7,14 +7,150 @@
 # results = model(source=0)  # generator of Results objects
 
 
+# import cv2
+# import time
+# from ultralytics import YOLO
+
+# # Load the pretrained YOLO model
+# model = YOLO("best.pt")
+# # model = YOLO("best.onnx", task="detect")
+
+
+# # Initialize the video source (0 for webcam or path to a video file)
+# source = 0  # Change this to a video file path if needed
+# cap = cv2.VideoCapture(source)
+
+# # Check if the video capture source is opened
+# if not cap.isOpened():
+#     print("Error: Unable to open video source.")
+#     exit()
+
+# # Initialize FPS calculation
+# fps = 0.0
+# prev_time = time.time()
+
+# while True:
+#     ret, frame = cap.read()
+#     if not ret:
+#         print("Error: Unable to read frame from source.")
+#         break
+
+#     # Run YOLO inference on the frame
+#     results = model(frame)  # Predict on the current frame
+
+#     # Visualize the results on the frame
+#     annotated_frame = results[0].plot()  # Plot bounding boxes, labels, etc.
+
+#     # Calculate FPS
+#     current_time = time.time()
+#     fps = 1 / (current_time - prev_time)
+#     prev_time = current_time
+
+#     # Overlay FPS on the frame
+#     cv2.putText(
+#         annotated_frame, 
+#         f"FPS: {fps:.2f}", 
+#         (10, 30), 
+#         cv2.FONT_HERSHEY_SIMPLEX, 
+#         1, 
+#         (0, 255, 0), 
+#         2, 
+#         cv2.LINE_AA
+#     )
+
+#     # Display the annotated frame
+#     cv2.imshow("YOLO Inference", annotated_frame)
+
+#     # Break loop on 'q' key press
+#     if cv2.waitKey(1) & 0xFF == ord('q'):
+#         break
+
+# # Release resources
+# cap.release()
+# cv2.destroyAllWindows()
+
+
+# import cv2
+# import time
+# from ultralytics import YOLO
+
+# # Load the pretrained YOLO model
+# model = YOLO("best.pt")
+
+# # Initialize the video source (0 for webcam or path to a video file)
+# source = 0  # Change this to a video file path if needed
+# cap = cv2.VideoCapture(source)
+
+# # Check if the video capture source is opened
+# if not cap.isOpened():
+#     print("Error: Unable to open video source.")
+#     exit()
+
+# # Initialize FPS calculation
+# fps = 0.0
+# prev_time = time.time()
+
+# # Confidence threshold
+# CONFIDENCE_THRESHOLD = 0.45  # 45%
+
+# while True:
+#     ret, frame = cap.read()
+#     if not ret:
+#         print("Error: Unable to read frame from source.")
+#         break
+
+#     # Run YOLO inference on the frame
+#     results = model(frame)  # Predict on the current frame
+
+#     # Filter results by confidence threshold
+#     for result in results:
+#         filtered_boxes = []
+#         for box in result.boxes.data:
+#             confidence = box[4].item()  # Confidence score is at index 4
+#             if confidence > CONFIDENCE_THRESHOLD:
+#                 filtered_boxes.append(box)
+
+#         # Replace results with filtered detections
+#         result.boxes.data = filtered_boxes
+
+#     # Visualize the filtered results on the frame
+#     annotated_frame = results[0].plot()  # Plot bounding boxes, labels, etc.
+
+#     # Calculate FPS
+#     current_time = time.time()
+#     fps = 1 / (current_time - prev_time)
+#     prev_time = current_time
+
+#     # Overlay FPS on the frame
+#     cv2.putText(
+#         annotated_frame, 
+#         f"FPS: {fps:.2f}", 
+#         (10, 30), 
+#         cv2.FONT_HERSHEY_SIMPLEX, 
+#         1, 
+#         (0, 255, 0), 
+#         2, 
+#         cv2.LINE_AA
+#     )
+
+#     # Display the annotated frame
+#     cv2.imshow("YOLO Inference", annotated_frame)
+
+#     # Break loop on 'q' key press
+#     if cv2.waitKey(1) & 0xFF == ord('q'):
+#         break
+
+# # Release resources
+# cap.release()
+# cv2.destroyAllWindows()
+
+
 import cv2
 import time
 from ultralytics import YOLO
 
 # Load the pretrained YOLO model
 model = YOLO("best.pt")
-# model = YOLO("best.onnx", task="detect")
-
 
 # Initialize the video source (0 for webcam or path to a video file)
 source = 0  # Change this to a video file path if needed
@@ -29,6 +165,21 @@ if not cap.isOpened():
 fps = 0.0
 prev_time = time.time()
 
+# Confidence threshold
+CONFIDENCE_THRESHOLD = 0.45  # 45%
+
+# Class names
+class_names = [
+    "car_back", "car_side", "car_front",
+    "bus_back", "bus_side", "bus_front",
+    "truck_back", "truck_side", "truck_front",
+    "motorcycle_back", "motorcycle_side", "motorcycle_front",
+    "bicycle_back", "bicycle_side", "bicycle_front"
+]
+
+# Indices of "side" classes to ignore
+side_classes = {10}  # Indices of *_side classes in the class_names list
+
 while True:
     ret, frame = cap.read()
     if not ret:
@@ -38,8 +189,21 @@ while True:
     # Run YOLO inference on the frame
     results = model(frame)  # Predict on the current frame
 
-    # Visualize the results on the frame
-    annotated_frame = results[0].plot()  # Plot bounding boxes, labels, etc.
+    for result in results:
+        filtered_boxes = []
+        for box in result.boxes.data:
+            confidence = box[4].item()  # Confidence score at index 4
+            class_id = int(box[5].item())  # Class ID is at index 5
+
+            # Filter by confidence and remove "side" detections
+            if confidence > CONFIDENCE_THRESHOLD and class_id not in side_classes:
+                filtered_boxes.append(box)
+
+        # Replace results with filtered detections
+        result.boxes.data = filtered_boxes
+
+    # Visualize the filtered results on the frame
+    annotated_frame = results[0].plot()
 
     # Calculate FPS
     current_time = time.time()
