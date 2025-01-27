@@ -1,6 +1,0 @@
-train: C:\Users\adith\Desktop\yolo\finetune_yolov11n\data\train
-val: C:\Users\adith\Desktop\yolo\finetune_yolov11n\data\val
-
-nc: 15
-
-names: ["car_back", "car_side", "car_front", "bus_back", "bus_side", "bus_front", "truck_back", "truck_side", "truck_front", "motorcycle_back", "motorcycle_side", "motorcycle_front", "bicycle_back", "bicycle_side", "bicycle_front"]
