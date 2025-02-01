@@ -53,22 +53,22 @@ Understanding the class distribution is crucial for evaluating the dataset's bal
 The model's performance is evaluated using various metrics and visualizations.
 
 - **Normalized Confusion Matrix**:
-  ![Confusion Matrix Normalized](https://raw.githubusercontent.com/your-username/repo-name/main/confusion_matrix_normalized.png)
+  ![Confusion Matrix Normalized](https://github.com/Haafii/safesync-vehicle-orientation-detection/blob/main/yolov11/v2/runs/detect/train/confusion_matrix_normalized.png)
   *Explanation*: The normalized confusion matrix provides a detailed view of the model's performance across classes, highlighting both correct predictions and misclassifications.
 - **Raw Confusion Matrix**:
-  ![Confusion Matrix](https://raw.githubusercontent.com/your-username/repo-name/main/confusion_matrix.png)
+  ![Confusion Matrix](https://github.com/Haafii/safesync-vehicle-orientation-detection/blob/main/yolov11/v2/runs/detect/train/confusion_matrix.png)
   *Explanation*: The raw confusion matrix shows the absolute numbers of correct and incorrect predictions, offering a clear view of the model's accuracy.
 - **F1-Confidence Curve**:
-  ![F1-Confidence Curve](https://raw.githubusercontent.com/your-username/repo-name/main/f1_confidence_curve.png)
+  ![F1-Confidence Curve](https://github.com/Haafii/safesync-vehicle-orientation-detection/blob/main/yolov11/v2/runs/detect/train/F1_curve.png)
   *Explanation*: The F1-confidence curve demonstrates the model's F1 score across different confidence thresholds, indicating the model's reliability at various confidence levels.
 - **Precision-Confidence Curve**:
-  ![Precision-Confidence Curve](https://raw.githubusercontent.com/your-username/repo-name/main/precision_confidence_curve.png)
+  ![Precision-Confidence Curve](https://github.com/Haafii/safesync-vehicle-orientation-detection/blob/main/yolov11/v2/runs/detect/train/P_curve.png)
   *Explanation*: This curve shows how precision varies with confidence, helping to understand the model's behavior under different confidence settings.
 - **Precision-Recall Curve**:
-  ![Precision-Recall Curve](https://raw.githubusercontent.com/your-username/repo-name/main/precision_recall_curve.png)
+  ![Precision-Recall Curve](https://github.com/Haafii/safesync-vehicle-orientation-detection/blob/main/yolov11/v2/runs/detect/train/PR_curve.png)
   *Explanation*: The precision-recall curve provides insights into the model's performance in terms of precision and recall, crucial for understanding the model's effectiveness.
 - **Recall-Confidence Curve**:
-  ![Recall-Confidence Curve](https://raw.githubusercontent.com/your-username/repo-name/main/recall_confidence_curve.png)
+  ![Recall-Confidence Curve](https://github.com/Haafii/safesync-vehicle-orientation-detection/blob/main/yolov11/v2/runs/detect/train/R_curve.png)
   *Explanation*: The recall-confidence curve illustrates how recall changes with confidence, offering insights into the model's ability to identify all instances of a class.
 
 ### Visualizations
