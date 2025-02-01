@@ -39,13 +39,13 @@ The dataset consists of labeled images for various vehicle orientations. The cla
 Understanding the class distribution is crucial for evaluating the dataset's balance and the model's performance.
 
 - **Training Dataset**:
-  ![Class Distribution - Training Dataset](https://github.com/Haafii/safesync-vehicle-orientation-detection/blob/main/yolov11/v2/charts/train_dataset.png)
+  ![Class Distribution - Training Dataset](https://github.com/Haafii/safesync-vehicle-orientation-detection/blob/main/yolov11/v2/charts/train_dataset.png) ![Class Distribution - Whole Dataset](https://github.com/Haafii/safesync-vehicle-orientation-detection/blob/main/yolov11/v2/runs/detect/train/labels.jpg)
   *Explanation*: The training dataset shows a high number of instances for `car_back` and `car_front`, indicating a class imbalance that the model needs to handle.
 - **Validation Dataset**:
   ![Class Distribution - Validation Dataset](https://github.com/Haafii/safesync-vehicle-orientation-detection/blob/main/yolov11/v2/charts/val_dataset.png)
   *Explanation*: The validation dataset has a similar distribution to the training set, ensuring that the model is evaluated on a representative sample.
 - **Whole Dataset**:
-  ![Class Distribution - Whole Dataset](https://github.com/Haafii/safesync-vehicle-orientation-detection/blob/main/yolov11/v2/charts/whole_dataset.png) ![Class Distribution - Whole Dataset](https://github.com/Haafii/safesync-vehicle-orientation-detection/blob/main/yolov11/v2/runs/detect/train/labels.jpg)
+  ![Class Distribution - Whole Dataset](https://github.com/Haafii/safesync-vehicle-orientation-detection/blob/main/yolov11/v2/charts/whole_dataset.png)
   *Explanation*: The whole dataset distribution provides an overview of the data distribution across all classes, helping in understanding the overall class balance.
 
 ## Model Performance
